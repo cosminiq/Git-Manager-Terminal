@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Git Manager - Terminal Interface</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Terminal Header -->
+    <div class="terminal-header">
+        <div class="terminal-buttons">
+            <span class="btn-close"></span>
+            <span class="btn-minimize"></span>
+            <span class="btn-maximize"></span>
+        </div>
+        <div class="terminal-title">
+            <span class="icon">🚀</span>
+            Git Manager Terminal v2.0
+        </div>
+        <div class="terminal-info">
+            <span id="current-path">/loading...</span>
+        </div>
+    </div>
+
+    <!-- Terminal Content -->
+    <div class="terminal-content">
+        <!-- Status Display -->
+        <div id="status-display" class="terminal-section">
+            <div class="section-header">
+                <span class="icon">📊</span>
+                <span class="title">STATUS REPOSITORY</span>
+            </div>
+            <div id="status-content" class="status-grid">
+                <div class="loading">Se încarcă...</div>
+            </div>
+        </div>
+
+        <!-- Command Panel -->
+        <div class="terminal-section">
+            <div class="section-header">
+                <span class="icon">⚡</span>
+                <span class="title">COMENZI RAPIDE</span>
+            </div>
+            <div class="command-grid">
+                <button class="cmd-btn" onclick="app.initRepo()" id="init-btn">
+                    <span class="cmd-icon">🚀</span>
+                    <span class="cmd-text">Init Repo</span>
+                </button>
+                <button class="cmd-btn" onclick="app.showAddModal()" id="add-btn">
+                    <span class="cmd-icon">➕</span>
+                    <span class="cmd-text">Add Files</span>
+                </button>
+                <button class="cmd-btn" onclick="app.showCommitModal()" id="commit-btn">
+                    <span class="cmd-icon">💾</span>
+                    <span class="cmd-text">Commit</span>
+                </button>
+                <button class="cmd-btn" onclick="app.showHistory()" id="history-btn">
+                    <span class="cmd-icon">📚</span>
+                    <span class="cmd-text">History</span>
+                </button>
+                <button class="cmd-btn" onclick="app.showBranches()" id="branch-btn">
+                    <span class="cmd-icon">🌿</span>
+                    <span class="cmd-text">Branches</span>
+                </button>
+                <button class="cmd-btn" onclick="app.showRemoteModal()" id="remote-btn">
+                    <span class="cmd-icon">🌐</span>
+                    <span class="cmd-text">Remote</span>
+                </button>
+                <button class="cmd-btn" onclick="app.pushChanges()" id="push-btn">
+                    <span class="cmd-icon">🚀</span>
+                    <span class="cmd-text">Push</span>
+                </button>
+                <button class="cmd-btn" onclick="app.pullChanges()" id="pull-btn">
+                    <span class="cmd-icon">📥</span>
+                    <span class="cmd-text">Pull</span>
+                </button>
+                <button class="cmd-btn special" onclick="app.quickBackup()" id="backup-btn">
+                    <span class="cmd-icon">⚡</span>
+                    <span class="cmd-text">Quick Backup</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Console Output -->
+        <div class="terminal-section">
+            <div class="section-header">
+                <span class="icon">💻</span>
+                <span class="title">CONSOLE OUTPUT</span>
+                <button class="clear-btn" onclick="app.clearConsole()">Clear</button>
+            </div>
+            <div id="console" class="console-output">
+                <div class="console-line welcome">
+                    <span class="prompt">git@manager:~$</span>
+                    <span class="output">Git Manager Terminal inițializat ✅</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal pentru Add Files -->
+    <div id="add-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>➕ Adaugă Fișiere</h3>
+                <span class="close" onclick="app.closeModal('add-modal')">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="modal-section">
+                    <label>
+                        <input type="radio" name="add-type" value="all" checked>
+                        <span class="radio-custom"></span>
+                        Adaugă toate fișierele modificate
+                    </label>
+                </div>
+                <div class="modal-section">
+                    <label>
+                        <input type="radio" name="add-type" value="specific">
+                        <span class="radio-custom"></span>
+                        Adaugă fișiere specifice
+                    </label>
+                    <div id="file-list" class="file-list" style="display: none;">
+                        <!-- Files will be populated here -->
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-cancel" onclick="app.closeModal('add-modal')">Anulează</button>
+                <button class="btn-confirm" onclick="app.addFiles()">Adaugă</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal pentru Commit -->
+    <div id="commit-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>💾 Commit Modificări</h3>
+                <span class="close" onclick="app.closeModal('commit-modal')">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="modal-section">
+                    <label for="commit-message">Mesaj commit:</label>
+                    <input type="text" id="commit-message" placeholder="Adaugă o funcționalitate nouă..." class="input-field">
+                </div>
+                <div class="commit-examples">
+                    <h4>Exemple de mesaje bune:</h4>
+                    <div class="example-item" onclick="app.setCommitMessage(this.textContent)">
+                        Adaugă funcționalitatea de login
+                    </div>
+                    <div class="example-item" onclick="app.setCommitMessage(this.textContent)">
+                        Corectează bug-ul din calculator
+                    </div>
+                    <div class="example-item" onclick="app.setCommitMessage(this.textContent)">
+                        Îmbunătățește design-ul paginii
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-cancel" onclick="app.closeModal('commit-modal')">Anulează</button>
+                <button class="btn-confirm" onclick="app.commitChanges()">Commit</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal pentru Remote -->
+    <div id="remote-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>🌐 Configurare Repository Remote</h3>
+                <span class="close" onclick="app.closeModal('remote-modal')">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="modal-section">
+                    <label for="remote-url">URL Repository Remote:</label>
+                    <input type="text" id="remote-url" placeholder="https://github.com/username/repo.git" class="input-field">
+                </div>
+                <div class="remote-examples">
+                    <h4>Exemple de URL-uri:</h4>
+                    <div class="example-item">https://github.com/username/repository.git</div>
+                    <div class="example-item">git@github.com:username/repository.git</div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-cancel" onclick="app.closeModal('remote-modal')">Anulează</button>
+                <button class="btn-confirm" onclick="app.setupRemote()">Configurează</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal pentru History -->
+    <div id="history-modal" class="modal wide">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>📚 Istoric Commit-uri</h3>
+                <span class="close" onclick="app.closeModal('history-modal')">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div id="history-content" class="history-content">
+                    <div class="loading">Se încarcă istoricul...</div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-confirm" onclick="app.closeModal('history-modal')">Închide</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal pentru Branches -->
+    <div id="branches-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>🌿 Gestionare Branch-uri</h3>
+                <span class="close" onclick="app.closeModal('branches-modal')">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="modal-section">
+                    <h4>Branch-uri existente:</h4>
+                    <div id="branches-list" class="branches-list">
+                        <div class="loading">Se încarcă branch-urile...</div>
+                    </div>
+                </div>
+                <div class="modal-section">
+                    <h4>Creează branch nou:</h4>
+                    <input type="text" id="new-branch-name" placeholder="feature/new-functionality" class="input-field">
+                    <button class="btn-action" onclick="app.createBranch()">Creează Branch</button>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-confirm" onclick="app.scloseModal('branches-modal')">Închide</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/script.js"></script>
+</body>
+</html>
